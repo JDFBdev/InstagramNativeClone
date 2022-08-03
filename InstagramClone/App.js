@@ -1,26 +1,82 @@
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Landing from './components/auth/Landing';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import Register from './components/auth/Register';
+import { useSafeAreaFrame } from 'react-native-safe-area-context';
+import Login from './components/auth/Login';
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware} from 'redux';
+import rootReducer from './redux/reducers'
+import thunk from 'redux-thunk';
+import Main from './components/Main';
+
+const store = createStore(
+  rootReducer,
+  applyMiddleware(thunk)
+);
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDDONfjS8KO61yKyFw0lVgGXnC0p4OEpw8",
+  authDomain: "instagramclone-e5587.firebaseapp.com",
+  projectId: "instagramclone-e5587",
+  storageBucket: "instagramclone-e5587.appspot.com",
+  messagingSenderId: "802164169707",
+  appId: "1:802164169707:web:f1c1f5bc2bd92ef23bd7ae"
+};
+
+let app;
+
+if (firebase.apps.length === 0) {
+  app = firebase.initializeApp(firebaseConfig)
+} else {
+  app = firebase.app();
+}
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName='Landing'>
-        <Stack.Screen name="Landing" component={Landing}/>
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  const [state, setState] = useState({loaded: false, loggedIn: false});
+
+  useEffect(()=>{
+    firebase.auth().onAuthStateChanged( (user) => {  // Consulta a firebase si el usuario esta autenticado
+      if(!user){
+        setState({loaded: true, loggedIn: false})
+      } else {
+        setState({loaded: true, loggedIn: true})
+      }
+    })
+  },[])
+
+  if(!state.loaded){  // Ponemos una pantalla de carga hasta que firebase nos responda
+    return (
+      <View style={{flex: 1, justifyContent: 'center'}}>
+        <Text>Loading...</Text>
+      </View>
+    )
+  }
+
+  if(!state.loggedIn){  // Si no estamos logeados navegamos entre estas pantallas
+    return (
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName='Landing' screenOptions={{headerShown: false}}>
+          <Stack.Screen name="Landing" component={Landing} />
+          <Stack.Screen name="Register" component={Register} />
+          <Stack.Screen name="Login" component={Login} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
+
+  return(
+    <Provider store={store}>
+      <Main/>
+    </Provider>
+  )
+
+}
