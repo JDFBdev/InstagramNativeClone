@@ -7,13 +7,13 @@ import Landing from './components/auth/Landing';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import Register from './components/auth/Register';
-import { useSafeAreaFrame } from 'react-native-safe-area-context';
 import Login from './components/auth/Login';
 import { Provider } from 'react-redux';
-import { createStore, applyMiddleware} from 'redux';
-import rootReducer from './redux/reducers'
+import { createStore, applyMiddleware } from 'redux';
+import rootReducer from './redux/reducers/index'
 import thunk from 'redux-thunk';
 import Main from './components/Main';
+import Add from './components/main/Add';
 
 const store = createStore(
   rootReducer,
@@ -75,7 +75,12 @@ export default function App() {
 
   return(
     <Provider store={store}>
-      <Main/>
+      <NavigationContainer>
+          <Stack.Navigator initialRouteName='Main' screenOptions={{headerShown: false}}>
+            <Stack.Screen name="Main" component={Main} />
+            <Stack.Screen name="Add" component={Add} />
+          </Stack.Navigator>
+      </NavigationContainer>
     </Provider>
   )
 

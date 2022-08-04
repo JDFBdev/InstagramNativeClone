@@ -10,7 +10,7 @@ export default function Login() {
         const { email, password, name } = inputs;
         firebase.auth().signInWithEmailAndPassword(email, password)
         .then((result)=>{
-            console.log(result);
+            console.log('Logged In');
         })
         .catch((e)=>{
             console.log(e);

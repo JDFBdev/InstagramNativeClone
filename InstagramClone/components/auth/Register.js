@@ -12,9 +12,8 @@ export default function Register() {
         firebase.auth().createUserWithEmailAndPassword(email, password)  // Creamos el usuario
             .then((result)=>{
                 firebase.firestore().collection('users')       // De la tabla de users
-                    .doc(firebase.auth().currentUser.uid)      // generamos un doc con el userid que acabamos de crear
+                    .doc(firebase.auth().currentUser.uid)      // apuntamos a un doc con el userid que acabamos de crear
                     .set({ name, email })                      // Seteamos los valores en la tabla
-                console.log(result);
             })
             .catch((e)=>{
                 console.log(e);
