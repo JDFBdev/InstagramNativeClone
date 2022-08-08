@@ -4,9 +4,11 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
+import { useNavigation } from '@react-navigation/native';
 
-export default function Save(props, {navigation}){
+export default function Save(props){
   const [caption, setCaption] = useState("");
+  const navigation = useNavigation();
 
   const uploadIamge = async function(){
     const uri = props.route.params.image;
@@ -27,7 +29,6 @@ export default function Save(props, {navigation}){
     const taskCompleted = () => {
       task.snapshot.ref.getDownloadURL().then((snapshot)=>{
         setPostData(snapshot);
-        console.log(snapshot);
       })
     }
 
@@ -44,9 +45,9 @@ export default function Save(props, {navigation}){
       .collection('posts')
       .doc(firebase.auth().currentUser.uid)
       .collection('userPosts')
-      .add({downloadURL: downloadURL, caption: caption, creation: firebase.firestore.FieldValue.serverTimestamp()})
+      .add({downloadURL: downloadURL, caption , creation: firebase.firestore.FieldValue.serverTimestamp()})
       .then((function(){
-        navigation.popToTop()
+        navigation.navigate('Main')
       }))
   }
 
@@ -55,7 +56,7 @@ export default function Save(props, {navigation}){
       <Image source={{uri: props.route.params.image}}/>
       <TextInput
         placeholder='Caption...'
-        onChange={(caption) => setCaption(caption)}
+        onChangeText={(caption) => setCaption(caption)}
       />
       <Button title='Save' onPress={() => uploadIamge()} />
     </View>

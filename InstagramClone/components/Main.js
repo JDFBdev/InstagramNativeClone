@@ -1,12 +1,16 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import  { connect } from 'react-redux';
-import { fetchUser } from '../redux/actions/index';
+import { fetchUser, fetchUserFollowing, fetchUserPosts } from '../redux/actions/index';
 import { useDispatch, useSelector } from 'react-redux';
 import Feed from './main/Feed';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Profile from './main/Profile';
+import Search from './main/Search';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
 
 const EmptyScreen = () => {
     return(null);
@@ -18,7 +22,9 @@ function Main() {
     const dispatch = useDispatch();
 
     useEffect(()=>{
-       dispatch(fetchUser())
+       dispatch(fetchUser());
+       dispatch(fetchUserPosts());
+       dispatch(fetchUserFollowing());
     },[])
 
     if(!currentUser){
@@ -36,7 +42,15 @@ function Main() {
                         )
                     }}/>
                 <Tab.Screen
-                    listeners={({ navigation })=>({
+                    name="Search"
+                    component={Search}
+                    options={{
+                        tabBarIcon: ({color, size}) => (
+                            <MaterialCommunityIcons name='magnify' color={color} size={26} />
+                        )
+                    }}/>
+                <Tab.Screen
+                    listeners={({ navigation })=>({ // Listener a navigation en esta pagina, redireccionamos a Add
                         tabPress: event => {
                             event.preventDefault();
                             navigation.navigate('Add')
@@ -50,6 +64,12 @@ function Main() {
                         )
                     }}/>
                 <Tab.Screen
+                    listeners={({ navigation })=>({ // Listener a navigation en esta pagina, redireccionamos a Profile, con parametro uid
+                        tabPress: event => {
+                            event.preventDefault();
+                            navigation.navigate('Profile', {uid: firebase.auth().currentUser.uid})
+                        }
+                    })}
                     name="Profile"
                     component={Profile}
                     options={{
@@ -61,4 +81,4 @@ function Main() {
     )
 }
 
-export default connect(null, { fetchUser })(Main);
+export default connect(null, { fetchUser, fetchUserPosts, fetchUserFollowing })(Main);
