@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import  { connect } from 'react-redux';
-import { fetchUser, fetchUserFollowing, fetchUserPosts } from '../redux/actions/index';
+import { clearData, fetchUser, fetchUserFollowing, fetchUserPosts } from '../redux/actions/index';
 import { useDispatch, useSelector } from 'react-redux';
 import Feed from './main/Feed';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
@@ -22,9 +22,10 @@ function Main() {
     const dispatch = useDispatch();
 
     useEffect(()=>{
-       dispatch(fetchUser());
-       dispatch(fetchUserPosts());
-       dispatch(fetchUserFollowing());
+        dispatch(clearData());
+        dispatch(fetchUser());
+        dispatch(fetchUserPosts());
+        dispatch(fetchUserFollowing());
     },[])
 
     if(!currentUser){
@@ -81,4 +82,4 @@ function Main() {
     )
 }
 
-export default connect(null, { fetchUser, fetchUserPosts, fetchUserFollowing })(Main);
+export default connect(null, { fetchUser, fetchUserPosts, fetchUserFollowing, clearData })(Main);

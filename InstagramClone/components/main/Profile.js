@@ -78,6 +78,10 @@ export default function Profile({route}) {
     .delete()
   }
 
+  const onLogout = function(){
+    firebase.auth().signOut();
+  }
+
   if(user === null){
     return <View/>
   }
@@ -96,7 +100,8 @@ export default function Profile({route}) {
                 <Button title='Follow' onPress={onFollow} />
               }
             </View>
-          ) : null
+          ) : 
+          <Button title='Logout' onPress={onLogout}/>
         }
       </View>
       <View style={s.galleryContainer}>

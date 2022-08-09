@@ -1,7 +1,13 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-import  { USER_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE } from '../constants/index';
+import  { USER_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA } from '../constants/index';
+
+export function clearData(){
+    return ((dispatch) => {
+        dispatch({type: CLEAR_DATA})
+    })
+}
 
 export function fetchUser(){
     return((dispatch)=>{
@@ -40,7 +46,7 @@ export function fetchUserPosts(){
     })
 }
 
-export function fetchUserFollowing(){
+export function fetchUserFollowing(){  // Fetch usuarios que seguimos
     return((dispatch)=>{
         firebase.firestore()
             .collection('following')
@@ -52,14 +58,15 @@ export function fetchUserFollowing(){
                     return id;
                 })
                 dispatch({type: USER_FOLLOWING_STATE_CHANGE, payload: following});
-                for(let i = 0; i<following.length; i++){
-                    dispatch(fetchUsersData(following[i]));
+
+                for(let i = 0; i<following.length; i++){     // Por cada uno que seguimos, nos traemos su data
+                    dispatch(fetchUsersData(following[i], true));
                 }
             })
     })
 }
 
-export function fetchUsersData(uid){
+export function fetchUsersData(uid, getPosts){
     return((dispatch, getState)=>{
         const found = getState().users.some(el => el.uid === uid); // Checkeamos si el usuario ya esta cargado en el estado. Si no esta, lo buscamos
         if(!found){
@@ -71,13 +78,15 @@ export function fetchUsersData(uid){
                 
                 if(snapshot.exists){
                     let user = snapshot.data();
-                    user.uid = snapshot.uid;
+                    user.uid = snapshot.id;
                     dispatch({type: USERS_DATA_STATE_CHANGE, payload: user});
-                    dispatch(fetchUsersFollowingPosts(user.id));
                 } else {
                     console.log('User does not exist')
                 }
             })
+            if(getPosts){
+                dispatch(fetchUsersFollowingPosts(uid));  // Si se requiere, nos traemos su posts para el feed
+            }
         }
     })
 }
@@ -100,7 +109,6 @@ export function fetchUsersFollowingPosts(uid){
                     return { id, user, ...data }
                 })
                 dispatch({type: USERS_POSTS_STATE_CHANGE, payload: {posts: posts, uid: uid}})
-                console.log(getState())
             })
     })
 }

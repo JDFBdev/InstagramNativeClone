@@ -15,6 +15,7 @@ import thunk from 'redux-thunk';
 import Main from './components/Main';
 import Add from './components/main/Add';
 import Save from './components/main/Save';
+import Comment from './components/main/Comment';
 
 const store = createStore(
   rootReducer,
@@ -45,7 +46,7 @@ export default function App() {
   const [state, setState] = useState({loaded: false, loggedIn: false});
 
   useEffect(()=>{
-    firebase.auth().onAuthStateChanged( (user) => {  // Consulta a firebase si el usuario esta autenticado
+    firebase.auth().onAuthStateChanged( (user) => {  // Listener de cambio de autenticacion de usuario
       if(!user){
         setState({loaded: true, loggedIn: false})
       } else {
@@ -81,6 +82,7 @@ export default function App() {
             <Stack.Screen name="Main" component={Main} />
             <Stack.Screen name="Add" component={Add} />
             <Stack.Screen name="Save" component={Save} />
+            <Stack.Screen name="Comment" component={Comment} />
           </Stack.Navigator>
       </NavigationContainer>
     </Provider>
