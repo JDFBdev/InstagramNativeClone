@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-import  { USER_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA } from '../constants/index';
+import  { USER_STATE_CHANGE, USER_POSTS_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA, USERS_LIKES_STATE_CHANGE } from '../constants/index';
 
 export function clearData(){
     return ((dispatch) => {
@@ -108,8 +108,33 @@ export function fetchUsersFollowingPosts(uid){
                     const id = doc.id;
                     return { id, user, ...data }
                 })
+
+                for(let i = 0; i < posts.length; i++){
+                    dispatch(fetchUsersFollowingLikes(uid, posts[i].id)) // El usuario uid likea el post posts[i].id
+                }
                 dispatch({type: USERS_POSTS_STATE_CHANGE, payload: {posts: posts, uid: uid}})
             })
     })
 }
 
+export function fetchUsersFollowingLikes(uid, postId){
+    return((dispatch, getState)=>{
+        firebase.firestore()
+            .collection("posts")
+            .doc(uid)
+            .collection("userPosts")
+            .doc(postId)
+            .collection("likes")
+            .doc(firebase.auth().currentUser.uid)
+            .onSnapshot((snapshot) => {
+                const postId = snapshot.ref.path.split('/')[3];
+                
+                let currentUserLike = false;
+                if(snapshot.exists){
+                    currentUserLike = true;
+                }
+
+                dispatch({type: USERS_LIKES_STATE_CHANGE, payload: { postId: postId, currentUserLike: currentUserLike }})
+            })
+    })
+}

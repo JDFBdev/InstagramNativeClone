@@ -5,7 +5,8 @@ const initialState = {
     posts: [],  // Posts de current user
     following: [],  // uid de usuarios que sigue
     users: [],  // Posts y datos de usuarios que sigue
-    usersFollowingLoaded: 0  // Cuantos usuarios que sigue estan cargados en users
+    usersFollowingLoaded: 0,  // Cuantos usuarios que sigue estan cargados en users
+    feed: []
 }
 
 export default function rootReducer(state = initialState, action){
@@ -39,21 +40,20 @@ export default function rootReducer(state = initialState, action){
         return { 
             ...state,
             usersFollowingLoaded: state.usersFollowingLoaded + 1,
-            users: state.users.map(user => 
-                user.uid === action.payload.uid ? 
-                {...user, posts: action.payload.posts}:
-                user
+            feed: [...state.feed, action.payload]
+        }
+
+    case constants.USERS_LIKES_STATE_CHANGE:
+        return { 
+            ...state,
+            feed: state.feed.map(post => post.id == action.payload.postId ?
+                {...post, currentUserLike: action.payload.currentUserLike} :
+                post
             )
         }
 
     case constants.CLEAR_DATA:
-        return { 
-            currentUser: null,
-            posts: [],
-            following: [],
-            users: [],
-            usersFollowingLoaded: 0
-        }
+        return initialState
 
     default:
         return state
