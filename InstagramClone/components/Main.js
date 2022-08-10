@@ -33,7 +33,7 @@ function Main() {
     }
     
     return (
-            <Tab.Navigator initialRouteName='Feed' screenOptions={{headerShown: false}} labeled={false}>
+            <Tab.Navigator initialRouteName='Feed' screenOptions={{headerShown: false, tabBarColor: '#000000'}} labeled={false} >
                 <Tab.Screen
                     name="Feed"
                     component={Feed}

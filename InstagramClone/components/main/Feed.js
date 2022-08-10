@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
+import InstagramLogo from '../../assets/instagramText.png';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function Feed({navigation}) {
   const [posts, setPosts] = useState([]);
@@ -22,8 +24,6 @@ export default function Feed({navigation}) {
       setPosts(feed);
     }
   },[usersFollowingLoaded, feed])
-
-  // console.log(feed) 
 
   const onLikePress = function(userId, postId){
     firebase.firestore()
@@ -53,21 +53,37 @@ export default function Feed({navigation}) {
 
   return (
     <View style={s.container}>
+      <View style={{height: 50, backgroundColor: "#000000", padding: 10}}>
+        <Image source={InstagramLogo} style={{width:106, height: 30}} />
+      </View>
       <View style={s.galleryContainer}>
         <FlatList
           numColumns={1}
           horizontal={false}
-          data={posts[0].posts}
+          data={posts}
           renderItem={({item}) => (
             <View style={s.postContainer}>
-              <Text style={{fontSize: 20, flex: 1}}>{item.user.name}</Text>
+              <TouchableOpacity onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}>
+                <View style={s.postHeader}>
+                  <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} />
+                  <Text style={[s.userName, {marginLeft: 5}]}>{item.user.name}</Text>
+                </View>
+              </TouchableOpacity>
               <Image style={s.image} source={{uri: item.downloadURL}} />
-              {
-                item.currentUserLike ?
-                <Button title='Dislike' onPress={() => onDislikePress(item.user.uid, item.id)}/> :
-                <Button title='Like' onPress={() => onLikePress(item.user.uid, item.id)}/>
-              }
-              <Text onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid})}>View Comments...</Text>
+              <View style={s.postBottom}>
+                {
+                  item.currentUserLike ?
+                  <TouchableOpacity onPress={() => onDislikePress(item.user.uid, item.id)}>
+                    <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32} />
+                  </TouchableOpacity> :
+                  <TouchableOpacity onPress={() => onLikePress(item.user.uid, item.id)}>
+                    <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30} />
+                  </TouchableOpacity>
+                }
+                <Text style={s.userName}>{item.user.name}</Text>
+                <Text style={s.caption}>{item.caption}</Text>
+                <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid})}>View Comments...</Text>
+              </View>
             </View>
           )}
         />
@@ -78,10 +94,15 @@ export default function Feed({navigation}) {
 
 const s = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    backgroundColor: '#000000'
   },
-  userInfo: {
-
+  postHeader: {
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 10,
+    backgroundColor: '#000000'
   },
   galleryContainer: {
     flex: 1
@@ -91,5 +112,24 @@ const s = StyleSheet.create({
   },
   image: {
     aspectRatio: 1/1
+  },
+  postBottom: {
+    backgroundColor: '#000000',
+    paddingLeft: 10
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#ffffff'
+  },
+  caption: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#ffffff'
+  },
+  viewComments: {
+    color: '#cccccc',
+    marginTop: 12,
+    marginBottom: 8
   }
 });

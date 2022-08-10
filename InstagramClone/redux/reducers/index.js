@@ -40,7 +40,7 @@ export default function rootReducer(state = initialState, action){
         return { 
             ...state,
             usersFollowingLoaded: state.usersFollowingLoaded + 1,
-            feed: [...state.feed, action.payload]
+            feed: [...state.feed, ...action.payload.posts]
         }
 
     case constants.USERS_LIKES_STATE_CHANGE:

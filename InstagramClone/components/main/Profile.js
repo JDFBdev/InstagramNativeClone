@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, Button } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, Button, Dimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const widthvw = Dimensions.get('window').width; //full width
 
 export default function Profile({route}) {
   const [userPosts, setUserPosts] = useState([]);
@@ -88,9 +91,27 @@ export default function Profile({route}) {
 
   return (
     <View style={s.container}>
-      <View style={s.userInfo}>
-        <Text>{user.name}</Text>
-        <Text>{user.email}</Text>
+      <View style={s.header}>
+        <View style={s.userInfo}>
+          <Text style={s.userName} >{user.name}</Text>
+          <MaterialCommunityIcons style={s.profilePicture} name='account-circle' color={'#ffffff'} size={90} />
+        </View>
+        <View style={s.userStats}>
+          <View style={s.userStat}>
+            <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>{posts.length}</Text>
+            <Text style={s.userStatText}>Publicaciones</Text>
+          </View>
+          <View style={{width: 15}}/>
+          <View style={s.userStat}>
+            <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>2</Text>
+            <Text style={s.userStatText}>Seguidores</Text>
+          </View>
+          <View style={{width: 15}}/>
+          <View style={s.userStat}>
+            <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>2</Text>
+            <Text style={s.userStatText}>Seguidos</Text>
+          </View>
+        </View>
         {
           route.params.uid !== firebase.auth().currentUser.uid ? (
             <View>
@@ -100,8 +121,8 @@ export default function Profile({route}) {
                 <Button title='Follow' onPress={onFollow} />
               }
             </View>
-          ) : 
-          <Button title='Logout' onPress={onLogout}/>
+          ) : null
+          // <Button title='Logout' onPress={onLogout}/>
         }
       </View>
       <View style={s.galleryContainer}>
@@ -122,10 +143,33 @@ export default function Profile({route}) {
 
 const s = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    backgroundColor: '#000000'
+  },
+  header: {
+    height: 160,
+    flexDirection: 'row',
+    padding: 10,
+    alignItems: 'center',
   },
   userInfo: {
-
+    alignItems: 'center',
+    width: widthvw / 5
+  },
+  userName: {
+    color: '#ffffff',
+    fontSize: 25
+  },
+  userStats: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: (widthvw / 5) * 4
+  },
+  userStat: {
+    alignItems: 'center',
+  },
+  userStatText: {
+    color: 'white'
   },
   galleryContainer: {
     flex: 1
