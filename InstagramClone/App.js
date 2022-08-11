@@ -14,7 +14,6 @@ import rootReducer from './redux/reducers/index'
 import thunk from 'redux-thunk';
 import Main from './components/Main';
 import Add from './components/main/Add';
-import Save from './components/main/Save';
 import Comment from './components/main/Comment';
 
 const store = createStore(
@@ -81,7 +80,6 @@ export default function App() {
           <Stack.Navigator initialRouteName='Main' screenOptions={{headerShown: false}}>
             <Stack.Screen name="Main" component={Main} />
             <Stack.Screen name="Add" component={Add} />
-            <Stack.Screen name="Save" component={Save} />
             <Stack.Screen name="Comment" component={Comment} />
           </Stack.Navigator>
       </NavigationContainer>

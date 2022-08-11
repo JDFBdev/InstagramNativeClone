@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, FlatList, Button, TextInput } from 'react-native';
+import { Text, View, FlatList, Button, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { fetchUsersData } from '../../redux/actions';
 import  { connect, useSelector, useDispatch } from 'react-redux';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 function Comment({route}) {
-    const { postId, uid } = route.params;
+    const { postId, uid, caption, username } = route.params;
     const [comments, setComments] = useState([]);
     const [postIdState, setPostIdState] = useState('');
     const [text, setText] = useState('');
@@ -70,31 +71,89 @@ function Comment({route}) {
     }
 
   return (
-    <View>
+    <View style={s.container}>
+        <View style={[s.commentContainer, {borderWidth: 1, borderBottomColor: '#303030',}]}>
+            <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} />
+            <View style={s.data}>
+                <Text style={s.commentUserName}>{username}</Text>
+                <Text style={s.comment}>{caption}</Text>
+            </View>
+        </View>
         <FlatList
             numColumns={1}
             horizonta={false}
             data={comments}
             renderItem={({item})=>(
-                <View>
-                    {
-                        item.user !== undefined ?
-                        <Text style={{fontSize: 15}}>{item.user.name}</Text> :
-                        null
-                    }
-                    <Text style={{fontSize: 22}}>{item.text}</Text>
+                <View style={s.commentContainer}>
+                    <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} />
+                    <View style={s.data}>
+                        {
+                            item.user !== undefined ?
+                            <Text style={s.commentUserName}>{item.user.name}</Text> :
+                            null
+                        }
+                        <Text style={s.comment}>{item.text}</Text>
+                    </View>
                 </View>
             )}
         />
         <View>
             <TextInput 
-                placeholder='Commnet...'
+                multiline
+                numberOfLines={2}
+                placeholderTextColor='white'
+                style={s.textInput}
+                placeholder='Comment...'
                 onChangeText={(text) => { setText(text) }}
             />
-            <Button title='Send' onPress={onComment} />
+            <TouchableOpacity onPress={onComment}>
+              <View style={s.saveBtn}>
+                <Text style={{color: 'white', fontSize: 18, fontWeight: '500'}}>Send Comment</Text>
+              </View>
+            </TouchableOpacity>
         </View>
     </View>
   )
 }
 
 export default connect(null, { fetchUsersData })(Comment);
+
+const s = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#000000',
+        padding: 20
+    },
+    commentContainer: {
+        flexDirection: 'row',
+        paddingTop: 10,
+        paddingBottom: 10
+    },
+    data:{
+        marginLeft: 10,
+        
+    },
+    commentUserName:{
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '500'
+    },
+    comment: {
+        color: '#ffffff',
+        fontSize: 16
+    }, 
+    saveBtn: {
+        backgroundColor: '#366efc',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 10,
+        height: 40,
+        marginBottom: 10
+    }, 
+    textInput: {
+        color: 'white',
+        borderRadius: 15,
+        padding: 5,
+        marginBottom: 20
+    }
+})

@@ -74,15 +74,15 @@ export default function Feed({navigation}) {
                 {
                   item.currentUserLike ?
                   <TouchableOpacity onPress={() => onDislikePress(item.user.uid, item.id)}>
-                    <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32} />
+                    <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32} style={{marginTop: 5}} />
                   </TouchableOpacity> :
                   <TouchableOpacity onPress={() => onLikePress(item.user.uid, item.id)}>
-                    <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30} />
+                    <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30}style={{marginTop: 5}} />
                   </TouchableOpacity>
                 }
                 <Text style={s.userName}>{item.user.name}</Text>
                 <Text style={s.caption}>{item.caption}</Text>
-                <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid})}>View Comments...</Text>
+                <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid, caption: item.caption, username: item.user.name})}>View Comments...</Text>
               </View>
             </View>
           )}
