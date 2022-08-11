@@ -9,9 +9,6 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 export default function Feed({navigation}) {
   const [posts, setPosts] = useState([]);
-
-  const users = useSelector((state) => state.users);
-  const currentUser = useSelector((state) => state.currentUser);
   const following = useSelector((state) => state.following);
   const usersFollowingLoaded = useSelector((state) => state.usersFollowingLoaded);
   const feed = useSelector((state) => state.feed);
@@ -63,12 +60,10 @@ export default function Feed({navigation}) {
           data={posts}
           renderItem={({item}) => (
             <View style={s.postContainer}>
-              <TouchableOpacity onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}>
-                <View style={s.postHeader}>
-                  <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} />
-                  <Text style={[s.userName, {marginLeft: 5}]}>{item.user.name}</Text>
-                </View>
-              </TouchableOpacity>
+              <View style={s.postHeader}>
+                <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}} />
+                <Text style={[s.userName, {marginLeft: 5}]} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}>{item.user.name}</Text>
+              </View>
               <Image style={s.image} source={{uri: item.downloadURL}} />
               <View style={s.postBottom}>
                 {
