@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, Button, Dimensions } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, Button, Dimensions, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
@@ -8,7 +8,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 const widthvw = Dimensions.get('window').width; //full width
 
-export default function Profile({route}) {
+export default function Profile({route, navigation}) {
+
   const [userPosts, setUserPosts] = useState([]);
   const [user, setUser] = useState(null);
   const [following, setFollowing] = useState(false);
@@ -34,7 +35,7 @@ export default function Profile({route}) {
           let data = snapshot.data();
           setUser(data);
         } else {
-            console.log('User does not exist')
+          console.log('User does not exist')
         }
       })
 
@@ -94,7 +95,12 @@ export default function Profile({route}) {
       <View style={s.header}>
         <View style={s.userInfo}>
           <Text style={s.userName} >{user.name}</Text>
-          <MaterialCommunityIcons style={s.profilePicture} name='account-circle' color={'#ffffff'} size={90} />
+          {
+            user.profilePicture !== undefined ?
+            <Image style={s.profilePicture} source={{uri: user.profilePicture}} onPress={()=> {if(route.params.uid === firebase.auth().currentUser.uid) navigation.navigate('Add', {profile: true})}}/>:
+            <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={90} onPress={()=> {if(route.params.uid === firebase.auth().currentUser.uid) navigation.navigate('Add', {profile: true})}}/>    
+          }
+          
         </View>
         <View style={s.userStats}>
           <View style={s.userStat}>
@@ -158,7 +164,13 @@ const s = StyleSheet.create({
   },
   userName: {
     color: '#ffffff',
-    fontSize: 25
+    fontSize: 25,
+    marginBottom: 10
+  },
+  profilePicture: {
+    width: 90,
+    height: 90,
+    borderRadius: 45
   },
   userStats: {
     flexDirection: 'row',

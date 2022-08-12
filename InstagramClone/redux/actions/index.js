@@ -97,7 +97,7 @@ export function fetchUsersFollowingPosts(uid){
             .collection('posts')
             .doc(uid)
             .collection('userPosts')
-            .orderBy('creation', 'asc')
+            .orderBy('creation')
             .get()
             .then((snapshot)=>{
                 const uid = snapshot.docs[0].ref.path.split('/')[1];

@@ -7,17 +7,21 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
+import { clearData, fetchUser, fetchUserFollowing, fetchUserPosts } from '../../redux/actions/index';
+import  { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const widthvw = Dimensions.get('window').width; //full width
 const heightvh = Dimensions.get('window').height; //full height
 
-export default function Add({navigation}) {
+function Add({navigation, route}) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [hasGalleryPermission, setHasGalleryPermission] = useState(null);
   const [camera, setCamera] = useState(null);
   const [image, setImage] = useState(null);
   const [type, setType] = useState(CameraType.back);
   const [caption, setCaption] = useState("");
+  const dispatch = useDispatch();
 
   useEffect(() => {
     (async () => {
@@ -67,7 +71,11 @@ export default function Add({navigation}) {
 
     const taskCompleted = () => {
       task.snapshot.ref.getDownloadURL().then((snapshot)=>{
-        setPostData(snapshot);
+        if(route.params !== undefined){
+          updateProfilePicutre(snapshot);
+        } else {
+          setPostData(snapshot);
+        }
       })
     }
 
@@ -86,8 +94,26 @@ export default function Add({navigation}) {
       .collection('userPosts')
       .add({downloadURL: downloadURL, caption , creation: firebase.firestore.FieldValue.serverTimestamp()})
       .then((function(){
+        dispatch(clearData());
+        dispatch(fetchUser());
+        dispatch(fetchUserPosts());
+        dispatch(fetchUserFollowing());
         navigation.navigate('Main')
       }))
+  }
+
+  const updateProfilePicutre = function(downloadURL){
+    firebase.firestore()
+    .collection('users')
+    .doc(firebase.auth().currentUser.uid)
+    .set({ profilePicture: downloadURL }, {merge: true})
+    .then((function(){
+      dispatch(clearData());
+      dispatch(fetchUser());
+      dispatch(fetchUserPosts());
+      dispatch(fetchUserFollowing());
+      navigation.navigate('Profile', {uid: firebase.auth().currentUser.uid})
+    }))
   }
 
   if (hasCameraPermission === null) {
@@ -107,17 +133,24 @@ export default function Add({navigation}) {
             <Image source={{ uri: image}} style={s.image}/>
           </View>
           <View style={{padding: 10}}>
-            <TextInput
+            {
+              route.params === undefined && 
+              <TextInput
               multiline
               numberOfLines={2}
               placeholderTextColor='white'
               style={s.textInput}
               placeholder='Caption...'
               onChangeText={(caption) => setCaption(caption)}
-            />
+              />
+            }
             <TouchableOpacity onPress={() => uploadImage()}>
               <View style={s.saveBtn}>
-                <Text style={{color: 'white', fontSize: 18, fontWeight: '500'}}>Post</Text>
+                {
+                  route.params !== undefined ? 
+                  <Text style={{color: 'white', fontSize: 18, fontWeight: '500'}}>Update Profile Picture</Text> :
+                  <Text style={{color: 'white', fontSize: 18, fontWeight: '500'}}>Post</Text>
+                }
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>setImage(null)}>
@@ -155,6 +188,8 @@ export default function Add({navigation}) {
     </View>
   );
 }
+
+export default connect(null, { fetchUser, fetchUserPosts, fetchUserFollowing, clearData })(Add);
 
 const s = StyleSheet.create({
   cameraContainer: {

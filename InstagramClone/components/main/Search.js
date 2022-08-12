@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
@@ -40,7 +40,11 @@ export default function Search({navigation}) {
         renderItem={({item}) => (
           <TouchableOpacity onPress={() => navigation.navigate("Profile", {uid: item.id}) }>
             <View style={s.userContainer}>
-              <MaterialCommunityIcons name='account-circle' color={'white'} size={40} />
+              {
+                item.profilePicture ?
+                <Image source={{uri: item.profilePicture}} style={s.profilePicture}/> :
+                <MaterialCommunityIcons name='account-circle' color={'white'} size={40} />
+              }
               <Text style={s.userName}>{item.name}</Text>
             </View>
           </TouchableOpacity>
@@ -66,6 +70,11 @@ const s = StyleSheet.create({
     zIndex: 10,
     marginTop: 17,
     marginLeft: 9
+  },
+  profilePicture: {
+    width: 40,
+    height: 40,
+    borderRadius: 20
   },
   input: {
     color: 'white',

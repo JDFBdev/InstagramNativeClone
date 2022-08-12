@@ -16,6 +16,10 @@ function Comment({route}) {
     const dispatch = useDispatch();
 
     useEffect(()=>{
+        getComments()
+    },[postId, users]) // Al abrir un post y cuando carguen usuarios nuevos
+
+    const getComments = function(){
 
         if(postId !== postIdState){  // Si el post de nuestro estado no es el que queremos mostrar
             firebase.firestore()   // Lo fetcheamos
@@ -57,8 +61,7 @@ function Comment({route}) {
             setComments(comments);
             
         }
-
-    },[postId, users]) // Al abrir un post y cuando carguen usuarios nuevos
+    }
 
     const onComment = function(){
         firebase.firestore()
@@ -68,6 +71,10 @@ function Comment({route}) {
         .doc(postId)
         .collection('comments')
         .add({creator: firebase.auth().currentUser.uid, text: text, creation: firebase.firestore.FieldValue.serverTimestamp()})
+        .then(()=>{
+            getComments();
+        })
+        setText('')
     }
 
   return (
@@ -104,6 +111,7 @@ function Comment({route}) {
                 placeholderTextColor='white'
                 style={s.textInput}
                 placeholder='Comment...'
+                value={text}
                 onChangeText={(text) => { setText(text) }}
             />
             <TouchableOpacity onPress={onComment}>

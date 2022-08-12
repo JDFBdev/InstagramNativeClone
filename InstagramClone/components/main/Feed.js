@@ -6,6 +6,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import InstagramLogo from '../../assets/instagramText.png';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import * as Sharing from 'expo-sharing';
 
 export default function Feed({navigation}) {
   const [posts, setPosts] = useState([]);
@@ -16,7 +17,7 @@ export default function Feed({navigation}) {
   useEffect(()=>{
     if(usersFollowingLoaded === following.length && following.length !== 0){  // Chequea que esten cargados todos los usuarios que sigue, se re-ejecuta cuando se cargan mas
       feed.sort(function(x,y){
-        return x.creation - y.creation; // returns positive or negative
+        return y.creation - x.creation; // returns positive or negative
       })
       setPosts(feed);
     }
@@ -43,6 +44,10 @@ export default function Feed({navigation}) {
       .doc(firebase.auth().currentUser.uid)
       .delete()
   }
+  
+  const handleShare =  async function(downloadURL){
+
+  }
 
   if (posts.length == 0) {
     return (<View />)
@@ -61,20 +66,28 @@ export default function Feed({navigation}) {
           renderItem={({item}) => (
             <View style={s.postContainer}>
               <View style={s.postHeader}>
-                <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}} />
-                <Text style={[s.userName, {marginLeft: 5}]} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}>{item.user.name}</Text>
+                {
+                  item.user.profilePicture !== undefined ? 
+                  <Image style={s.profilePicture} source={{uri: item.user.profilePicture}} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}/> :
+                  <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}} />
+                }
+                <Text style={[s.userName, {marginLeft: 8}]} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}>{item.user.name}</Text>
               </View>
               <Image style={s.image} source={{uri: item.downloadURL}} />
               <View style={s.postBottom}>
-                {
-                  item.currentUserLike ?
-                  <TouchableOpacity onPress={() => onDislikePress(item.user.uid, item.id)}>
-                    <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32} style={{marginTop: 5}} />
-                  </TouchableOpacity> :
-                  <TouchableOpacity onPress={() => onLikePress(item.user.uid, item.id)}>
-                    <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30}style={{marginTop: 5}} />
-                  </TouchableOpacity>
-                }
+                <View style={s.icons}>
+                  {
+                    item.currentUserLike ?
+                    <TouchableOpacity onPress={() => onDislikePress(item.user.uid, item.id)}>
+                      <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32}/>
+                    </TouchableOpacity> :
+                    <TouchableOpacity onPress={() => onLikePress(item.user.uid, item.id)}>
+                      <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30}/>
+                    </TouchableOpacity>
+                  }
+                  <MaterialCommunityIcons name='chat-outline' color={'#ffffff'} size={30} style={s.icon} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid, caption: item.caption, username: item.user.name})}/>
+                  <MaterialCommunityIcons name='send' color={'#ffffff'} size={30} style={s.icon} onPress={()=> { handleShare(item.downloadURL) }}/>
+                </View>
                 <Text style={s.userName}>{item.user.name}</Text>
                 <Text style={s.caption}>{item.caption}</Text>
                 <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid, caption: item.caption, username: item.user.name})}>View Comments...</Text>
@@ -105,12 +118,24 @@ const s = StyleSheet.create({
   postContainer: {
     flex: 1
   },
+  profilePicture: {
+    width: 32,
+    height: 32,
+    borderRadius: 16
+  },
   image: {
     aspectRatio: 1/1
   },
   postBottom: {
     backgroundColor: '#000000',
     paddingLeft: 10
+  },
+  icons: {
+    marginTop: 5,
+    flexDirection: 'row'
+  },
+  icon: {
+    marginLeft: 12
   },
   userName: {
     fontSize: 16,
