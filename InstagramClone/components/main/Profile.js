@@ -138,7 +138,9 @@ export default function Profile({route, navigation}) {
           data={userPosts}
           renderItem={({item}) => (
             <View style={s.imageContainer}>
-              <Image style={s.image} source={{uri: item.downloadURL}} />
+              <TouchableOpacity onPress={()=>{navigation.navigate("Post", {post: item})}}>
+                <Image style={s.image} source={{uri: item.downloadURL}} />
+              </TouchableOpacity>
             </View>
           )}
         />

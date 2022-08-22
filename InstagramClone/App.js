@@ -13,6 +13,7 @@ import thunk from 'redux-thunk';
 import Main from './components/Main';
 import Add from './components/main/Add';
 import Comment from './components/main/Comment';
+import Post from './components/main/Post';
 
 const store = createStore(
   rootReducer,
@@ -78,6 +79,7 @@ export default function App() {
             <Stack.Screen name="Main" component={Main} />
             <Stack.Screen name="Add" component={Add} />
             <Stack.Screen name="Comment" component={Comment} />
+            <Stack.Screen name="Post" component={Post} />
           </Stack.Navigator>
       </NavigationContainer>
     </Provider>
