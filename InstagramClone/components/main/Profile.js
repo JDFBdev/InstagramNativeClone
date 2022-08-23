@@ -62,6 +62,11 @@ export default function Profile({route, navigation}) {
       setFollowing(false);
     }
 
+    return () => { 
+      setUser(null);
+      setUserPosts([]);
+    }
+
   },[route.params.uid, followingSelector])
 
   const onFollow = function(){
@@ -86,8 +91,10 @@ export default function Profile({route, navigation}) {
     firebase.auth().signOut();
   }
 
+  console.log(posts)
+
   if(user === null){
-    return <View/>
+    return <View style={{flex: 1, backgroundColor: '#000000'}}/>
   }
 
   return (
@@ -138,7 +145,7 @@ export default function Profile({route, navigation}) {
           data={userPosts}
           renderItem={({item}) => (
             <View style={s.imageContainer}>
-              <TouchableOpacity onPress={()=>{navigation.navigate("Post", {post: item})}}>
+              <TouchableOpacity onPress={()=>{navigation.navigate("Post", {post: item, user: {...user, uid: route.params.uid}})}}>
                 <Image style={s.image} source={{uri: item.downloadURL}} />
               </TouchableOpacity>
             </View>

@@ -33,13 +33,13 @@ export function fetchUserPosts(){
             .collection('posts')
             .doc(firebase.auth().currentUser.uid)
             .collection('userPosts')
-            .orderBy('creation', 'asc')
+            .orderBy('creation', 'desc')
             .get()
             .then((snapshot)=>{
                 let posts = snapshot.docs.map(doc => {
                     const data = doc.data();
                     const id = doc.id;
-                    return { id, ...data }
+                    return { id, ...data, creation: data.creation.toDate() }
                 })
                 dispatch({type: USER_POSTS_STATE_CHANGE, payload: posts})
             })

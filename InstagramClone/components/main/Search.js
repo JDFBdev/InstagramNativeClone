@@ -14,15 +14,17 @@ export default function Search({navigation}) {
       } else {
         firebase.firestore()
         .collection('users')
-        .where('name', '>=', search)
+        .where('name', '>=', search.toUpperCase())
+        .where('name', '<=', search.toLowerCase() + '\uf8ff')
+        .limit(10)
         .get()
         .then((snaphot) => {
-            let users = snaphot.docs.map(doc => {
-                const data = doc.data();
-                const id = doc.id;
-                return { id, ...data }
-            });
-            setUsers(users);
+          let users = snaphot.docs.map(doc => {
+              const data = doc.data();
+              const id = doc.id;
+              return { id, ...data }
+          });
+          setUsers(users);
         })
       }
     }

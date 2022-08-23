@@ -29,7 +29,7 @@ function Main() {
     },[])
 
     if(!currentUser){
-        return <View></View>
+        return <View style={{flex: 1, backgroundColor: '#000000'}}/>
     }
     
     return (

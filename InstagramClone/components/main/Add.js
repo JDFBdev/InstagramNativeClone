@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, Button, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Image, Modal, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -10,13 +10,14 @@ import 'firebase/compat/storage';
 import { clearData, fetchUser, fetchUserFollowing, fetchUserPosts } from '../../redux/actions/index';
 import  { connect } from 'react-redux';
 import { useDispatch } from 'react-redux';
+import loadingGif from '../../assets/loading.gif';
 
 const widthvw = Dimensions.get('window').width; //full width
 const heightvh = Dimensions.get('window').height; //full height
 
 function Add({navigation, route}) {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
-  const [hasGalleryPermission, setHasGalleryPermission] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [camera, setCamera] = useState(null);
   const [image, setImage] = useState(null);
   const [type, setType] = useState(CameraType.back);
@@ -55,6 +56,7 @@ function Add({navigation, route}) {
   };
 
   const uploadImage = async function(){
+    setLoading(true);
     const childPath = `post/${firebase.auth().currentUser.uid}/${Math.random().toString(36)}`
     const response = await fetch(image);
     const blob = await response.blob()
@@ -100,6 +102,8 @@ function Add({navigation, route}) {
         dispatch(fetchUserFollowing());
         navigation.navigate('Main')
       }))
+
+      setLoading(false);
   }
 
   const updateProfilePicutre = function(downloadURL){
@@ -114,6 +118,8 @@ function Add({navigation, route}) {
       dispatch(fetchUserFollowing());
       navigation.navigate('Profile', {uid: firebase.auth().currentUser.uid})
     }))
+
+    setLoading(false);
   }
 
   if (hasCameraPermission === null) {
@@ -123,6 +129,8 @@ function Add({navigation, route}) {
   if (hasCameraPermission === false) {
     return <Text>No access to camera</Text>;
   }
+
+  console.log(loading)
 
   return (
     <View style={{flex: 1, backgroundColor: '#000000'}}>
@@ -184,7 +192,16 @@ function Add({navigation, route}) {
       </>
       }
 
-      
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={loading}>
+          <View style={s.modalFrame}>
+            <View style={{width: 150, height: 150, borderRadius: 10, backgroundColor: '#000000' ,  display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <Image source={loadingGif} style={{height: 80, width: 80}}/>
+            </View>
+          </View>
+      </Modal>
     </View>
   );
 }
@@ -255,6 +272,14 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     height: 40
-  }
+  },
+  modalFrame: {
+    width: "100%",
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000050'
+},
 
 });

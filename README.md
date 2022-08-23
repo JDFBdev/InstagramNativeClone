@@ -3,10 +3,11 @@
 Todo
 
 [✔️] Agregar foto de perfil
-[] Crear pagina de post
-[] Arreglar buscador
-[] Carga mientras se genera el post
+[✔️] Crear pagina de post
+[✔️] Arreglar buscador
+[✔️] Carga mientras se genera el post
 [✔️] Fetchs una vez que hay un post nuevo
+[✔️] Posts desordenados en profile
 [] Fetchs una vez que hay un comment nuevo
 [] Boton de compartir imagen y comment en post
 [] Hace cuanto se creo el post en post

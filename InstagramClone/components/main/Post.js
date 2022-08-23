@@ -1,40 +1,97 @@
-import React, {useState} from 'react'
-import { View, Text, StyleSheet, Image } from 'react-native';
+import React, {useState, useEffect} from 'react'
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export default function Post({route}) {
-  
-  const post = route.params.post;
-  console.log(post)
+export default function Post({route, navigation}) {
+  const [currentUserLike, setCurrentUserLike] = useState(false);
+  const {post, user} = route.params;
+
+  useEffect(()=>{
+    let isMounted = true;
+
+    firebase.firestore()
+    .collection("posts")
+    .doc(user.uid)
+    .collection("userPosts")
+    .doc(post.id)
+    .collection("likes")
+    .doc(firebase.auth().currentUser.uid)
+    .onSnapshot((snapshot) => {
+
+      if(snapshot.exists){
+        if(isMounted){
+          setCurrentUserLike(true);
+        }
+      }
+
+    })
+
+    return () => { isMounted = false };
+    
+  },[])
+
+  const onLikePress = function(userId, postId){
+    firebase.firestore()
+      .collection('posts')
+      .doc(userId)
+      .collection('userPosts')
+      .doc(postId)
+      .collection('likes')
+      .doc(firebase.auth().currentUser.uid)
+      .set({})
+
+      setCurrentUserLike(true);
+  }
+
+  const onDislikePress = function(userId, postId){
+    firebase.firestore()
+      .collection('posts')
+      .doc(userId)
+      .collection('userPosts')
+      .doc(postId)
+      .collection('likes')
+      .doc(firebase.auth().currentUser.uid)
+      .delete()
+
+    setCurrentUserLike(false);
+  }
+
+  const handleShare =  async function(downloadURL){
+
+  }
 
   return (
     <View style={s.container}>
       <View style={s.postContainer}>
-        {/* <View style={s.postHeader}>
+        <View style={s.postHeader}>
           {
-            item.user.profilePicture !== undefined ? 
-            <Image style={s.profilePicture} source={{uri: item.user.profilePicture}} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}/> :
-            <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}} />
+            user.profilePicture !== undefined ? 
+            <Image style={s.profilePicture} source={{uri: user.profilePicture}}/> :
+            <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32}/>
           }
-          <Text style={[s.userName, {marginLeft: 8}]} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}>{item.user.name}</Text>
-        </View> */}
+          <Text style={[s.userName, {marginLeft: 8}]}>{user.name}</Text>
+        </View>
         <Image style={s.image} source={{uri: post.downloadURL}} />
         <View style={s.postBottom}>
-          {/* <View style={s.icons}>
+          <View style={s.icons}>
             {
-              item.currentUserLike ?
-              <TouchableOpacity onPress={() => onDislikePress(item.user.uid, item.id)}>
+              currentUserLike ?
+              <TouchableOpacity onPress={() => onDislikePress(user.uid, post.id)}>
                 <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32}/>
               </TouchableOpacity> :
-              <TouchableOpacity onPress={() => onLikePress(item.user.uid, item.id)}>
+              <TouchableOpacity onPress={() => onLikePress(user.uid, post.id)}>
                 <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30}/>
               </TouchableOpacity>
             }
-            <MaterialCommunityIcons name='chat-outline' color={'#ffffff'} size={30} style={s.icon} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid, caption: item.caption, username: item.user.name})}/>
+            <MaterialCommunityIcons name='chat-outline' color={'#ffffff'} size={30} style={s.icon} onPress={()=> navigation.navigate('Comment', {postId: post.id, uid: user.uid, caption: post.caption, username: user.name})}/>
             <MaterialCommunityIcons name='send' color={'#ffffff'} size={30} style={s.icon} onPress={()=> { handleShare(item.downloadURL) }}/>
-          </View> */}
-          {/* <Text style={s.userName}>{item.user.name}</Text> */}
+          </View>
+          <Text style={s.userName}>{user.name}</Text>
           <Text style={s.caption}>{post.caption}</Text>
-          {/* <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: item.id, uid: item.user.uid, caption: item.caption, username: item.user.name})}>View Comments...</Text> */}
+          <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: post.id, uid: user.uid, caption: post.caption, username: user.name})}>View Comments...</Text>
         </View>
       </View>
     </View>
