@@ -14,6 +14,7 @@ import Main from './components/Main';
 import Add from './components/main/Add';
 import Comment from './components/main/Comment';
 import Post from './components/main/Post';
+import { RootSiblingParent } from 'react-native-root-siblings';
 
 const store = createStore(
   rootReducer,
@@ -74,14 +75,16 @@ export default function App() {
 
   return(
     <Provider store={store}>
-      <NavigationContainer>
-          <Stack.Navigator initialRouteName='Main' screenOptions={{headerShown: false}}>
-            <Stack.Screen name="Main" component={Main} />
-            <Stack.Screen name="Add" component={Add} />
-            <Stack.Screen name="Comment" component={Comment} />
-            <Stack.Screen name="Post" component={Post} />
-          </Stack.Navigator>
-      </NavigationContainer>
+      <RootSiblingParent>
+        <NavigationContainer>
+            <Stack.Navigator initialRouteName='Main' screenOptions={{headerShown: false}}>
+              <Stack.Screen name="Main" component={Main} />
+              <Stack.Screen name="Add" component={Add} />
+              <Stack.Screen name="Comment" component={Comment} />
+              <Stack.Screen name="Post" component={Post} />
+            </Stack.Navigator>
+        </NavigationContainer>
+      </RootSiblingParent>
     </Provider>
   )
 

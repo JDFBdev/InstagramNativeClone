@@ -91,8 +91,6 @@ export default function Profile({route, navigation}) {
     firebase.auth().signOut();
   }
 
-  console.log(posts)
-
   if(user === null){
     return <View style={{flex: 1, backgroundColor: '#000000'}}/>
   }
