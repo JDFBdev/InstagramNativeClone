@@ -130,8 +130,6 @@ function Add({navigation, route}) {
     return <Text>No access to camera</Text>;
   }
 
-  console.log(loading)
-
   return (
     <View style={{flex: 1, backgroundColor: '#000000'}}>
       {

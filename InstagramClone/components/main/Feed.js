@@ -1,13 +1,8 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, Text, Image, FlatList, StyleSheet, Button, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
-import * as Clipboard from 'expo-clipboard';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
 import InstagramLogo from '../../assets/instagramText.png';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Toast from 'react-native-root-toast';
+
 import Post from './Post';
 
 export default function Feed({navigation}) {

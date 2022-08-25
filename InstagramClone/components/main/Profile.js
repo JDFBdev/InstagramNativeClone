@@ -107,34 +107,43 @@ export default function Profile({route, navigation}) {
           }
           
         </View>
-        <View style={s.userStats}>
-          <View style={s.userStat}>
-            <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>{posts.length}</Text>
-            <Text style={s.userStatText}>Publicaciones</Text>
-          </View>
-          <View style={{width: 15}}/>
-          <View style={s.userStat}>
-            <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>2</Text>
-            <Text style={s.userStatText}>Seguidores</Text>
-          </View>
-          <View style={{width: 15}}/>
-          <View style={s.userStat}>
-            <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>2</Text>
-            <Text style={s.userStatText}>Seguidos</Text>
-          </View>
-        </View>
-        {
-          route.params.uid !== firebase.auth().currentUser.uid ? (
-            <View>
-              {
-                following ? 
-                <Button title='Following' onPress={onUnfollow} /> : 
-                <Button title='Follow' onPress={onFollow} />
-              }
+        <View style={s.headerRigth}>
+          <View style={s.userStats}>
+            <View style={s.userStat}>
+              <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>{userPosts.length}</Text>
+              <Text style={s.userStatText}>Publicaciones</Text>
             </View>
-          ) : null
-          // <Button title='Logout' onPress={onLogout}/>
-        }
+            <View style={{width: 15}}/>
+            <View style={s.userStat}>
+              <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>2</Text>
+              <Text style={s.userStatText}>Seguidores</Text>
+            </View>
+            <View style={{width: 15}}/>
+            <View style={s.userStat}>
+              <Text style={[s.userStatText, {fontWeight: '500', fontSize: 20}]}>2</Text>
+              <Text style={s.userStatText}>Seguidos</Text>
+            </View>
+          </View>
+          {
+            route.params.uid !== firebase.auth().currentUser.uid &&
+              <View>
+                {
+                  following ? 
+                  <TouchableOpacity onPress={onUnfollow}>
+                    <View  style={s.followBtn}>
+                      <Text style={s.btnText}>Following</Text>
+                    </View> 
+                  </TouchableOpacity>: 
+                  <TouchableOpacity onPress={onFollow}>
+                    <View style={s.followBtn}>
+                      <Text style={s.btnText}>Follow</Text>
+                    </View>
+                  </TouchableOpacity>
+                }
+              </View>
+            // <Button title='Logout' onPress={onLogout}/>
+          }
+        </View>
       </View>
       <View style={s.galleryContainer}>
         <FlatList
@@ -199,5 +208,22 @@ const s = StyleSheet.create({
   image: {
     flex: 1,
     aspectRatio: 1/1
+  },
+  headerRigth: {
+    display: 'flex',
+    alignItems: 'center',
+
+  },
+  followBtn: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: (widthvw / 5) * 3,
+    backgroundColor: '#366efc',
+    marginTop: 20,
+    padding: 3,
+    borderRadius: 5
+    },
+  btnText: {
+    color: 'white'
   }
 });

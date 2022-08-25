@@ -11,7 +11,8 @@ To do
 [✔️] Hace cuanto se creo el post en post
 [✔️] El sort de feed por fecha de creacion funciona?
 [✔️] Boton de compartir imagen y comment en post
-[] Importar componente Post a feed
+[✔️] Importar componente Post a feed
+[✔️] Estados en profile mezclados
+[] Post Delete y update
 [] Controlar formularios en Log In y Sign Up
-[] Post Delete
 [] Fetchs una vez que hay un comment nuevo

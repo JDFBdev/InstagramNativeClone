@@ -118,7 +118,7 @@ export function fetchUsersFollowingPosts(uid){
 }
 
 export function fetchUsersFollowingLikes(uid, postId){
-    return((dispatch, getState)=>{
+    return((dispatch)=>{
         firebase.firestore()
             .collection("posts")
             .doc(uid)
@@ -135,6 +135,20 @@ export function fetchUsersFollowingLikes(uid, postId){
                 }
 
                 dispatch({type: USERS_LIKES_STATE_CHANGE, payload: { postId: postId, currentUserLike: currentUserLike }})
+            })
+    })
+}
+
+export function deletePost(postId) {
+    return ((dispatch) => {
+        firebase.firestore()
+            .collection('posts')
+            .doc(firebase.auth().currentUser.uid)
+            .collection("userPosts")
+            .doc(postId)
+            .delete()
+            .then(() => {
+                dispatch(fetchUserPosts());
             })
     })
 }

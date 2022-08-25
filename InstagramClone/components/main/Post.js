@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, Dimensions } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
@@ -7,12 +7,20 @@ import 'firebase/compat/firestore';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-root-toast';
 import { useNavigation } from '@react-navigation/native';
+import { deletePost, fetchUsersFollowingLikes } from '../../redux/actions/index';
+import  { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-export default function Post({route, postFeed, userFeed}) {
-  const [currentUserLike, setCurrentUserLike] = useState(false);
+const widthvw = Dimensions.get('window').width; //full width
+const heightvw = Dimensions.get('window').height; //full width
+
+function Post({route, postFeed, userFeed}) {
   const [post, setPost] = useState({});
   const [user, setUser] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
+
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
   useEffect(()=>{
     let isMounted = true;
@@ -25,21 +33,23 @@ export default function Post({route, postFeed, userFeed}) {
       setUser(route.params.user);
     }
 
-    if(post.hasOwnProperty('currentUserLike')){
-      setCurrentUserLike(post.currentUserLike)
-    } else {
+    if(!post.hasOwnProperty('currentUserLike')){
       firebase.firestore()
       .collection("posts")
-      .doc(user.uid)
+      .doc(route === undefined ? userFeed.uid : route.params.user.uid)
       .collection("userPosts")
-      .doc(post.id)
+      .doc(route === undefined ? postFeed.id : route.params.post.id)
       .collection("likes")
       .doc(firebase.auth().currentUser.uid)
       .onSnapshot((snapshot) => {
   
         if(snapshot.exists){
           if(isMounted){
-            setCurrentUserLike(true);
+            setPost((prev)=>({...prev, currentUserLike: true}));
+          }
+        } else {
+          if(isMounted){
+            setPost((prev)=>({...prev, currentUserLike: false}));
           }
         }
   
@@ -60,7 +70,9 @@ export default function Post({route, postFeed, userFeed}) {
       .doc(firebase.auth().currentUser.uid)
       .set({})
 
-      setCurrentUserLike(true);
+    setPost((prev)=>({...prev, currentUserLike: true}));
+
+    dispatch(fetchUsersFollowingLikes(user.uid, post.id));
   }
 
   const onDislikePress = function(userId, postId){
@@ -73,7 +85,9 @@ export default function Post({route, postFeed, userFeed}) {
       .doc(firebase.auth().currentUser.uid)
       .delete()
 
-    setCurrentUserLike(false);
+    setPost((prev)=>({...prev, currentUserLike: false}));
+
+    dispatch(fetchUsersFollowingLikes(user.uid, post.id));
   }
   
   const handleShare = async function(downloadURL){
@@ -96,14 +110,19 @@ export default function Post({route, postFeed, userFeed}) {
     let dias = Math.floor(horas/24)
     let semanas = Math.floor(dias/7)
     
-    if(horas <= 23) return <Text style={s.date}>Hace {horas} horas</Text>
+    if(horas <= 23) return <Text style={s.date}>{horas} hours ago</Text>
 
-    if(horas >= 24 && horas <= 167) return <Text style={s.date}>Hace {dias} dias</Text>
+    if(horas >= 24 && horas <= 167) return <Text style={s.date}>{dias} days ago</Text>
 
-    if(horas > 167 && semanas === 1) return <Text style={s.date}>Hace {semanas} semana</Text>
+    if(horas > 167 && semanas === 1) return <Text style={s.date}>{semanas} week ago</Text>
 
-    if(horas > 167) return <Text style={s.date}>Hace {semanas} semanas</Text>
+    if(horas > 167) return <Text style={s.date}>{semanas} weeks ago</Text>
 
+  }
+
+  const handleDelete = function(){
+    dispatch(deletePost(post.id));
+    navigation.navigate('Feed')
   }
 
   if(!post.creation){
@@ -120,12 +139,16 @@ export default function Post({route, postFeed, userFeed}) {
             <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={32} onPress={()=>{navigation.navigate('Profile', {uid: user.uid})}}/>
           }
           <Text style={[s.userName, {marginLeft: 8}]} onPress={()=>{navigation.navigate('Profile', {uid: user.uid})}}>{user.name}</Text>
+          {
+            user.uid === firebase.auth().currentUser.uid &&
+            <MaterialCommunityIcons name='dots-vertical' color={'#ffffff'} size={30} style={s.dots} onPress={()=> setModalVisible(true)}/>
+          }
         </View>
         <Image style={s.image} source={{uri: post.downloadURL}} />
         <View style={s.postBottom}>
           <View style={s.icons}>
             {
-              currentUserLike ?
+              post.currentUserLike ?
               <TouchableOpacity onPress={() => onDislikePress(user.uid, post.id)}>
                 <MaterialCommunityIcons name='cards-heart' color={'#ED4956'} size={32}/>
               </TouchableOpacity> :
@@ -144,9 +167,36 @@ export default function Post({route, postFeed, userFeed}) {
           handleDate()
         }
       </View>
+      {
+        modalVisible && 
+        <View style={s.modalFrameOpacity} />
+      }
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}>
+          <TouchableOpacity style={s.modalFrame} onPress={()=> {setModalVisible(false);}} activeOpacity={1}>
+            <TouchableOpacity style={s.modal} activeOpacity={1}>
+              <View style={s.modalView}>
+                <Text style={s.modalText}>Options</Text>
+              </View>
+              <TouchableOpacity onPress={()=> { handleDelete() }}>
+                <View style={s.modalView} >
+                  <Text style={s.modalText} onPress={()=> { handleDelete() }}>Delete Post</Text>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+          
+      </Modal>
     </View>
   )
 }
+
+export default connect(null, { fetchUsersFollowingLikes, deletePost })(Post);
 
 const s = StyleSheet.create({
   container: {
@@ -163,6 +213,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: 10,
     backgroundColor: '#000000'
+  },
+  dots: {
+    marginLeft: 'auto',
+    marginRight: 12
   },
   galleryContainer: {
     flex: 1
@@ -208,5 +262,36 @@ const s = StyleSheet.create({
     color: '#a19f9f',
     fontSize: 13,
     marginLeft: 10
+  },
+  modalFrameOpacity: {
+    position: 'absolute',
+    width: "100%",
+    height: '100%',
+    display: 'flex',
+    backgroundColor: '#00000060'
+  },
+  modalFrame: {
+    width: "100%",
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+},
+  modal: {
+      width: widthvw,
+      height: 200,
+      backgroundColor: '#212121',
+      marginTop: heightvw - 200,
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+  },
+  modalView: {
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#383838'
+  },
+  modalText: {
+    color: 'white',
+    fontSize: 14
   }
 });
