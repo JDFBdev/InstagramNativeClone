@@ -13,6 +13,7 @@ To do
 [✔️] Boton de compartir imagen y comment en post
 [✔️] Importar componente Post a feed
 [✔️] Estados en profile mezclados
-[] Post Delete y update
+[✔️] Profile de otro usuario mal ordenados
+[✔️] Post Delete y update
+[✔️] Fetchs una vez que hay un comment nuevo
 [] Controlar formularios en Log In y Sign Up
-[] Fetchs una vez que hay un comment nuevo

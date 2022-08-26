@@ -43,7 +43,7 @@ export default function Profile({route, navigation}) {
       .collection('posts')
       .doc(route.params.uid)
       .collection('userPosts')
-      .orderBy('creation', 'asc')
+      .orderBy('creation', 'desc')
       .get()
       .then((snapshot)=>{
           let posts = snapshot.docs.map(doc => {
@@ -67,7 +67,7 @@ export default function Profile({route, navigation}) {
       setUserPosts([]);
     }
 
-  },[route.params.uid, followingSelector])
+  },[route.params.uid, followingSelector, posts])
 
   const onFollow = function(){
     firebase.firestore()

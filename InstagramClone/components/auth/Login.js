@@ -3,6 +3,7 @@ import { Text, View, TextInput, StatusBar, StyleSheet, Image, Dimensions, Toucha
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import InstagramLogo from '../../assets/instagramText.png';
+import Toast from 'react-native-root-toast';
 
 const widthvw = Dimensions.get('window').width; //full width
 const heightvh = Dimensions.get('window').height; //full height
@@ -11,14 +12,60 @@ export default function Login({navigation}) {
     const [inputs, setInputs] = useState({email: '', password: ''});
 
     const onSignIn = function(){
-        const { email, password, name } = inputs;
-        firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((result)=>{
-            console.log('Logged In');
-        })
-        .catch((e)=>{
-            console.log(e);
-        })
+        const { email, password } = inputs;
+
+        if(email === ''){
+            Toast.show('Email is required', {
+                duration: Toast.durations.SHORT,
+                position: Toast.positions.BOTTOM,
+                backgroundColor: '#f76077',
+                animation: true,
+            });
+        }
+
+        if(password === ''){
+            Toast.show('Password is required', {
+                duration: Toast.durations.SHORT,
+                position: Toast.positions.BOTTOM,
+                backgroundColor: '#f76077',
+                animation: true,
+            });
+        }
+
+        if(inputs.email !== '' && password !== ''){
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((result)=>{
+                console.log('Logged In');
+            })
+            .catch((e)=>{
+                var errorCode = e.code;
+                if (errorCode === 'auth/wrong-password') {
+                    Toast.show('Wrong password', {
+                        duration: Toast.durations.SHORT,
+                        position: Toast.positions.BOTTOM,
+                        backgroundColor: '#f76077',
+                        animation: true,
+                    });
+                }
+                if (errorCode === 'auth/invalid-email') {
+                    Toast.show('Invalid email', {
+                        duration: Toast.durations.SHORT,
+                        position: Toast.positions.BOTTOM,
+                        backgroundColor: '#f76077',
+                        animation: true,
+                    });
+                }
+                if (errorCode === 'auth/user-not-found') {
+                    Toast.show('User not found', {
+                        duration: Toast.durations.SHORT,
+                        position: Toast.positions.BOTTOM,
+                        backgroundColor: '#f76077',
+                        animation: true,
+                    });
+                }
+            })
+        }
     }
 
   return (
@@ -33,6 +80,7 @@ export default function Login({navigation}) {
                 onChangeText={(email)=>{setInputs((prev)=>({...prev, email}))}}
             />
             <TextInput
+                secureTextEntry={true}
                 placeholderTextColor={'white'}
                 style={s.input}
                 placeholder='Password'

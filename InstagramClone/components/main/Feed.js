@@ -34,7 +34,7 @@ export default function Feed({navigation}) {
           numColumns={1}
           horizontal={false}
           data={posts}
-          renderItem={({item, index}) => (
+          renderItem={({item}) => (
             <Post postFeed={item} userFeed={item.user}/>
           )}
         />

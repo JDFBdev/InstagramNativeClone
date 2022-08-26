@@ -7,7 +7,7 @@ import 'firebase/compat/firestore';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Toast from 'react-native-root-toast';
 import { useNavigation } from '@react-navigation/native';
-import { deletePost, fetchUsersFollowingLikes } from '../../redux/actions/index';
+import { deletePost, fetchUsersFollowingLikes, fetchUserPosts } from '../../redux/actions/index';
 import  { connect } from 'react-redux';
 import { useDispatch } from 'react-redux';
 
@@ -56,7 +56,11 @@ function Post({route, postFeed, userFeed}) {
       })
     }
 
-    return () => { isMounted = false };
+    return () => { 
+      isMounted = false ;
+      setUser({});
+      setPost({});
+    };
     
   },[])
 
@@ -106,9 +110,14 @@ function Post({route, postFeed, userFeed}) {
   const handleDate = function(){
 
     let ahora = new Date();
-    let horas = Math.floor((ahora - post.creation.toDate()) / 1000 / 60 / 60);
+    let minutos =  Math.floor((ahora - post.creation.toDate()) / 1000 / 60);
+    let horas = Math.floor( minutos / 60);
     let dias = Math.floor(horas/24)
     let semanas = Math.floor(dias/7)
+
+    if (minutos < 60 && minutos == 1) return <Text style={s.date}>{minutos} minute ago</Text>
+
+    if (minutos < 60) return <Text style={s.date}>{minutos} minutes ago</Text>
     
     if(horas <= 23) return <Text style={s.date}>{horas} hours ago</Text>
 
@@ -122,7 +131,8 @@ function Post({route, postFeed, userFeed}) {
 
   const handleDelete = function(){
     dispatch(deletePost(post.id));
-    navigation.navigate('Feed')
+    dispatch(fetchUserPosts());
+    navigation.navigate('Feed');
   }
 
   if(!post.creation){
@@ -156,12 +166,12 @@ function Post({route, postFeed, userFeed}) {
                 <MaterialCommunityIcons name='cards-heart-outline' color={'#ffffff'} size={30}/>
               </TouchableOpacity>
             }
-            <MaterialCommunityIcons name='chat-outline' color={'#ffffff'} size={30} style={s.icon} onPress={()=> navigation.navigate('Comment', {postId: post.id, uid: user.uid, caption: post.caption, username: user.name})}/>
+            <MaterialCommunityIcons name='chat-outline' color={'#ffffff'} size={30} style={s.icon} onPress={()=> navigation.navigate('Comment', {postId: post.id, uid: user.uid, caption: post.caption, username: user.name, profilePicture: user.profilePicture})}/>
             <MaterialCommunityIcons name='send' color={'#ffffff'} size={30} style={s.icon} onPress={()=> { handleShare(post.downloadURL) }}/>
           </View>
           <Text style={s.userName}>{user.name}</Text>
           <Text style={s.caption}>{post.caption}</Text>
-          <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: post.id, uid: user.uid, caption: post.caption, username: user.name})}>View Comments...</Text>
+          <Text style={s.viewComments} onPress={()=> navigation.navigate('Comment', {postId: post.id, uid: user.uid, caption: post.caption, username: user.name, profilePicture: user.profilePicture})}>View Comments...</Text>
         </View>
         {
           handleDate()
@@ -196,7 +206,7 @@ function Post({route, postFeed, userFeed}) {
   )
 }
 
-export default connect(null, { fetchUsersFollowingLikes, deletePost })(Post);
+export default connect(null, { fetchUsersFollowingLikes, deletePost, fetchUserPosts })(Post);
 
 const s = StyleSheet.create({
   container: {

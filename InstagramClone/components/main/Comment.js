@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, FlatList, Button, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, FlatList, Image, TextInput, StyleSheet, TouchableOpacity, InteractionManager } from 'react-native';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
@@ -8,9 +8,8 @@ import  { connect, useSelector, useDispatch } from 'react-redux';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 function Comment({route}) {
-    const { postId, uid, caption, username } = route.params;
+    const { postId, uid, caption, username, profilePicture } = route.params;
     const [comments, setComments] = useState([]);
-    const [postIdState, setPostIdState] = useState('');
     const [text, setText] = useState('');
     const users = useSelector((state) => state.users);
     const dispatch = useDispatch();
@@ -21,47 +20,44 @@ function Comment({route}) {
 
     const getComments = function(){
 
-        if(postId !== postIdState){  // Si el post de nuestro estado no es el que queremos mostrar
-            firebase.firestore()   // Lo fetcheamos
-            .collection('posts')
-            .doc(uid)
-            .collection('userPosts')
-            .doc(postId)
-            .collection('comments')
-            .get()
-            .then((snapshot) => {
-                let comments = snapshot.docs.map(doc => {  // Los mapeamos a data facil de consumir
-                    const data = doc.data();
-                    const id = doc.id;
-                    return {...data, id}  // En este caso, data contien 2 propiedades. El objecto que se devuelve tendra las 3
-                })
-                matchUserToComment(comments);   // Llamamos a la funcion que les agrega el nombre de usuario a los comentarios
-                
+        firebase.firestore()   // Lo fetcheamos
+        .collection('posts')
+        .doc(uid)
+        .collection('userPosts')
+        .doc(postId)
+        .collection('comments')
+        .orderBy('creation', 'asc')
+        .get()
+        .then((snapshot) => {
+            let comments = snapshot.docs.map(doc => {  // Los mapeamos a data facil de consumir
+                const data = doc.data();
+                const id = doc.id;
+                return {...data, id}  // En este caso, data contien 2 propiedades. El objecto que se devuelve tendra las 3
             })
-            setPostIdState(postId);  // Seteamos el nuevo post en el estado local
-        } else {
-            matchUserToComment(comments)  // Si es el post que queremos mostrar, igualmente les agregamos los nombres
-        }
+            matchUserToComment(comments);   // Llamamos a la funcion que les agrega el nombre de usuario a los comentarios
+            
+        })
+    }
 
-        function matchUserToComment(comments){
-            for(let i = 0; i < comments.length; i++){
-                
-                if(comments[i].hasOwnProperty('user')){
-                    continue;
-                }
-
-                const user = users.find(x => x.uid === comments[i].creator); // buscamos el usuario que hizo el comentario en users, mediante uid
-                if(user == undefined){  // Si no lo tengo
-                    dispatch(fetchUsersData(comments[i].creator, false)) // Lo busco. Segundo parametro es getPosts
-                } else {
-                    comments[i].user = user;
-                }
+    function matchUserToComment(comments){
+        for(let i = 0; i < comments.length; i++){
+            
+            if(comments[i].hasOwnProperty('user')){
+                continue;
             }
 
-            setComments(comments);
-            
+            const user = users.find(x => x.uid === comments[i].creator); // buscamos el usuario que hizo el comentario en users, mediante uid
+            if(user == undefined){  // Si no lo tengo
+                dispatch(fetchUsersData(comments[i].creator, false)) // Lo busco. Segundo parametro es getPosts
+            } else {
+                comments[i].user = user;
+            }
         }
+
+        setComments(comments);
+        
     }
+    
 
     const onComment = function(){
         firebase.firestore()
@@ -71,16 +67,18 @@ function Comment({route}) {
         .doc(postId)
         .collection('comments')
         .add({creator: firebase.auth().currentUser.uid, text: text, creation: firebase.firestore.FieldValue.serverTimestamp()})
-        .then(()=>{
-            getComments();
-        })
         setText('')
+        getComments();
     }
 
   return (
     <View style={s.container}>
         <View style={[s.commentContainer, {borderWidth: 1, borderBottomColor: '#303030',}]}>
-            <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} />
+            {
+                profilePicture ? 
+                <Image style={s.profilePicture} source={{uri: profilePicture}} onPress={()=>{navigation.navigate('Profile', {uid: uid})}}/> :
+                <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} onPress={()=>{navigation.navigate('Profile', {uid: uid})}}/>
+            }
             <View style={s.data}>
                 <Text style={s.commentUserName}>{username}</Text>
                 <Text style={s.comment}>{caption}</Text>
@@ -92,7 +90,14 @@ function Comment({route}) {
             data={comments}
             renderItem={({item})=>(
                 <View style={s.commentContainer}>
-                    <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} />
+                        {
+                            item.user !== undefined ? 
+                            (item.user.profilePicture ? 
+                                <Image style={s.profilePicture} source={{uri: item.user.profilePicture}} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}/> :
+                                <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}/>
+                            ):
+                            <MaterialCommunityIcons name='account-circle' color={'#ffffff'} size={38} onPress={()=>{navigation.navigate('Profile', {uid: item.user.uid})}}/>
+                        }
                     <View style={s.data}>
                         {
                             item.user !== undefined ?
@@ -163,5 +168,10 @@ const s = StyleSheet.create({
         borderRadius: 15,
         padding: 5,
         marginBottom: 20
+    },
+    profilePicture: {
+        width: 38,
+        height: 38,
+        borderRadius: 19
     }
 })
